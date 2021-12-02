@@ -1,3 +1,3 @@
 package com.ctrlz.yesterdays_weather
 
-const val BASE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/"
+const val API_KEY = "e048cdf5514a3d04739a5015f7aca986"
