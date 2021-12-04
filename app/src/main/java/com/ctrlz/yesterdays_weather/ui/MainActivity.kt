@@ -26,19 +26,28 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launchWhenCreated {
             val response = try {
-                RetrofitInstance.currentWeatherApi.getCurrentWeather("Seoul")
+                //RetrofitInstance.currentWeatherService.getCurrentWeather("Seoul")
+                val currentSecond = System.currentTimeMillis() / 1000
+                Log.e(TAG, "onCreate: ${currentSecond.toInt()}", )
+                RetrofitInstance.historicalWeatherService.getBeforeWeather(10.0, 10.0, currentSecond.toInt()-1)
             } catch (e: IOException) {
                 Log.e(TAG, "IOException, you might not have internet connection")
                 return@launchWhenCreated
             } catch (e: HttpException) {
                 Log.e(TAG, "HttpException, unexpected response")
                 return@launchWhenCreated
+            } catch (e: Throwable) {
+                Log.e(TAG, "${e.stackTrace}")
+                Log.e(TAG, "${e.message}")
+                return@launchWhenCreated
             }
 
-            if (response.isSuccessful && response.body() != null) {
-                binding.tvTest.text = response.body().toString()
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    binding.tvTest.text = it.toString()
+                } ?: Log.e(TAG, "Body is null")
             } else {
-                Log.e(TAG, "Response not successful")
+                Log.e(TAG, "Response not successful. code: ${response.code()}")
             }
         }
     }

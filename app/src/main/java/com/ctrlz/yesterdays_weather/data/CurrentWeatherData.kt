@@ -2,7 +2,7 @@ package com.ctrlz.yesterdays_weather.data
 
 import com.google.gson.annotations.SerializedName
 
-data class CurrentWeather(
+data class CurrentWeatherData(
     val coord: Coord,
     val weather: List<WeatherDescription>,
     val base: String,
@@ -22,7 +22,7 @@ data class CurrentWeather(
 
 // Components
 data class Coord(
-    val lon: Double,    // longitude, 경도
+    val lon: Double,    // Intitude, 경도
     val lat: Double     // latitude, 위도
 )
 

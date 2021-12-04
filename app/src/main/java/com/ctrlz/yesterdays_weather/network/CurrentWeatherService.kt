@@ -1,14 +1,14 @@
 package com.ctrlz.yesterdays_weather.network
 
 import com.ctrlz.yesterdays_weather.util.API_KEY
-import com.ctrlz.yesterdays_weather.data.CurrentWeather
+import com.ctrlz.yesterdays_weather.data.CurrentWeatherData
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 
 
-interface CurrentWeatherApi {
+interface CurrentWeatherService {
 
     @GET("data/2.5/weather")
     suspend fun getCurrentWeather(
@@ -16,7 +16,7 @@ interface CurrentWeatherApi {
         @Query("appid") apiKey: String = API_KEY,
         @Query("lang") lang: String = "kr",
         @Query("units") units: String = "metric"
-    ): Response<CurrentWeather>
+    ): Response<CurrentWeatherData>
 
     @GET("data/2.5/weather")
     suspend fun getCurrentWeather(
@@ -25,6 +25,6 @@ interface CurrentWeatherApi {
         @Query("appid") apiKey: String = API_KEY,
         @Query("lang") lang: String = "kr",
         @Query("units") units: String = "metric"
-    ): Response<CurrentWeather>
+    ): Response<CurrentWeatherData>
 
 }
