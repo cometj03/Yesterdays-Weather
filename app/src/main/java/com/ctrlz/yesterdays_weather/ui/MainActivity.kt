@@ -1,9 +1,8 @@
-package com.ctrlz.yesterdays_weather
+package com.ctrlz.yesterdays_weather.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.ctrlz.yesterdays_weather.databinding.ActivityMainBinding
 import com.ctrlz.yesterdays_weather.network.RetrofitInstance
@@ -23,9 +22,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.e(TAG, "onCreate: Current Time: ${System.currentTimeMillis()}")
+
         lifecycleScope.launchWhenCreated {
             val response = try {
-                RetrofitInstance.api.getCurrentWeather("Seoul")
+                RetrofitInstance.currentWeatherApi.getCurrentWeather("Seoul")
             } catch (e: IOException) {
                 Log.e(TAG, "IOException, you might not have internet connection")
                 return@launchWhenCreated

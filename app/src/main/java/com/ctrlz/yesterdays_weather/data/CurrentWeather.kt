@@ -2,7 +2,7 @@ package com.ctrlz.yesterdays_weather.data
 
 import com.google.gson.annotations.SerializedName
 
-data class Weather(
+data class CurrentWeather(
     val coord: Coord,
     val weather: List<WeatherDescription>,
     val base: String,
@@ -22,15 +22,16 @@ data class Weather(
 
 // Components
 data class Coord(
-    val lon: Double,    // longitude
-    val lat: Double     // latitude
+    val lon: Double,    // longitude, 경도
+    val lat: Double     // latitude, 위도
 )
 
 data class WeatherDescription(
-    val id: Int,    // https://gist.github.com/choipd/e73201a4653a5e56e830
+    val id: Int,        // https://gist.github.com/choipd/e73201a4653a5e56e830
     val main: String,
     val description: String,
-    val icon: String
+    val icon: String    // https://openweathermap.org/weather-conditions
+    // icon img: https://openweathermap.org/img/wn/{icon}@2x.png
 )
 
 data class MainWeather(
@@ -39,7 +40,9 @@ data class MainWeather(
     val pressure: Int,      // hPa
     val humidity: Int,      // %
     val temp_max: Double,
-    val temp_min: Double
+    val temp_min: Double,
+    val sea_level: Int,     // pressure on the sea level, hPa
+    val grnd_level: Int     // pressure on the ground level, hPa
 )
 
 data class Wind(
