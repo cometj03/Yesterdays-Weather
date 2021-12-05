@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.ctrlz.yesterdays_weather.databinding.ActivityMainBinding
 import com.ctrlz.yesterdays_weather.network.RetrofitInstance
+import com.ctrlz.yesterdays_weather.network.safeApiCall
+import kotlinx.coroutines.Dispatchers
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -22,23 +24,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.e(TAG, "onCreate: Current Time: ${System.currentTimeMillis()}")
-
         lifecycleScope.launchWhenCreated {
-            val response = try {
-                //RetrofitInstance.currentWeatherService.getCurrentWeather("Seoul")
-                val currentSecond = System.currentTimeMillis() / 1000
-                Log.e(TAG, "onCreate: ${currentSecond.toInt()}", )
-                RetrofitInstance.historicalWeatherService.getBeforeWeather(10.0, 10.0, currentSecond.toInt()-1)
-            } catch (e: IOException) {
-                Log.e(TAG, "IOException, you might not have internet connection")
-                return@launchWhenCreated
-            } catch (e: HttpException) {
-                Log.e(TAG, "HttpException, unexpected response")
-                return@launchWhenCreated
-            } catch (e: Throwable) {
-                Log.e(TAG, "${e.stackTrace}")
-                Log.e(TAG, "${e.message}")
+            val result = safeApiCall(Dispatchers.IO) {
+                RetrofitInstance.currentWeatherService.getCurrentWeather("Seoul")
+            }
+
+            val response = result.getOrElse {
+                when (it) {
+                    is IOException -> Log.e(TAG, "IOException, you might not have internet connection")
+                    is HttpException -> Log.e(TAG, "HttpException, unexpected response")
+                    else -> Log.e(TAG, "${it.message}")
+                }
                 return@launchWhenCreated
             }
 
