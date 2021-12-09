@@ -16,7 +16,7 @@ data class HistoricalWeatherData(
 
 // Components
 data class DataPointWeather(
-    val dt: Int,
+    val dt: Long,
     val sunrise: Int,
     val sunset: Int,
     val temp: Double,
@@ -34,7 +34,7 @@ data class DataPointWeather(
 )
 
 data class Hourly(
-    val dt: Int,
+    val dt: Long,
     val temp: Double,
     val feels_like: Double,
     val pressure: Int,

@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
-import com.ctrlz.yesterdays_weather.data.CurrentWeatherData
 import com.ctrlz.yesterdays_weather.data.HistoricalWeatherData
 import com.ctrlz.yesterdays_weather.databinding.ActivityMainBinding
 import com.ctrlz.yesterdays_weather.network.RetrofitInstance
@@ -14,6 +13,7 @@ import com.ctrlz.yesterdays_weather.util.getSecondTimestamp
 import com.ctrlz.yesterdays_weather.util.moveDay
 import com.ctrlz.yesterdays_weather.util.toDate
 import kotlinx.coroutines.Dispatchers
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.*
@@ -34,11 +34,10 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launchWhenCreated {
             val result = safeApiCall(Dispatchers.IO) {
                 // RetrofitInstance.currentWeatherService.getCurrentWeather("Seoul")
+
                 val time = Date().moveDay(-1).getSecondTimestamp()
-                Log.d(TAG, "onCreate: $time")
-                // TODO: fix the error code 400
+
                 RetrofitInstance.historicalWeatherService.getBeforeWeather(37.61, 126.91, time)
-//                RetrofitInstance.historicalWeatherService.getBeforeWeather(10.1, 10.1, time)
             }
 
             val response = result.getOrElse {
@@ -51,18 +50,22 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (response.isSuccessful) {
-                response.body()?.let {
-                    //binding.tvTest.text = it.toString()
-                    setWeather(it)
-                } ?: Log.e(TAG, "Body is null")
+                setHistoricalWeather(response.body())
             } else {
-                binding.tvTest.text = "Response not successful. code: ${response.code()}"
+                val jsonObject = JSONObject(response.errorBody()?.string() ?: "")
+                val errorMessage = jsonObject.getString("message")
+
+                binding.tvTest.text = "Response not successful. code: ${response.code()}\n\nError message: $errorMessage"
                 Log.e(TAG, "Response not successful. code: ${response.code()}")
             }
         }
     }
 
-    fun setWeather(weather: HistoricalWeatherData) {
+    fun setHistoricalWeather(weather: HistoricalWeatherData?) {
+        if (weather == null) {
+            binding.tvTest.text = "body is null"
+            return
+        }
         binding.tvTest.text = """
             날짜: ${weather.dataPointWeather.dt.toDate().getDateFormat()}
             기온: ${weather.dataPointWeather.temp}도

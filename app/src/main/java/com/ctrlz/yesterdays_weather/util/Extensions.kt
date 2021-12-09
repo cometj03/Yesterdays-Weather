@@ -3,14 +3,11 @@ package com.ctrlz.yesterdays_weather.util
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun Int.toDate(): Date {
-    val milli = this * 1000  // Second to Millis
-    return Date(milli.toLong())
-}
+fun Long.toDate() = Date(this * 1000)   // Second to Millis
 
-fun Date.getDateFormat() = SimpleDateFormat("yyyy-MM-dd").format(this)
+fun Date.getDateFormat(): String = SimpleDateFormat("yyyy-MM-dd").format(this)
 
-fun Date.getSecondTimestamp() = (time / 1000).toInt()
+fun Date.getSecondTimestamp(): Long = time / 1000
 
 // yesterday -> delta = -1
 fun Date.moveDay(delta: Int): Date {

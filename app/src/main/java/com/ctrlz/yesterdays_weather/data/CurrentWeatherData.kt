@@ -12,7 +12,7 @@ data class CurrentWeatherData(
     val clouds: Clouds,
     val rain: Rain,
     val snow: Snow,
-    val dt: Int,
+    val dt: Long,
     val sys: Sys,
     val timezone: Int,
     val id: Int,        // city id

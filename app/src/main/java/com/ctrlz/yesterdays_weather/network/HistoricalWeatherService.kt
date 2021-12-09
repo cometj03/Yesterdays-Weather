@@ -10,9 +10,9 @@ interface HistoricalWeatherService {
 
     @GET("data/2.5/onecall/timemachine")
     suspend fun getBeforeWeather(
-        @Query("lon") longitude: Double,
-        @Query("lat") latitude: Double,
-        @Query("dt") dataTime: Int,
+        @Query("lat") latitude: Double, // 위도
+        @Query("lon") longitude: Double,// 경도
+        @Query("dt") dataTime: Long,
         @Query("appid") apiKey: String = API_KEY,
         @Query("lang") lang: String = "kr",
         @Query("units") units: String = "metric"
