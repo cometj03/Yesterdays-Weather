@@ -35,7 +35,7 @@ data class WeatherDescription(
 )
 
 data class MainWeather(
-    val temp: Double,       // Kelvin
+    val temp: Double,
     val feels_like: Double, // 체감 온도
     val pressure: Int,      // hPa
     val humidity: Int,      // %

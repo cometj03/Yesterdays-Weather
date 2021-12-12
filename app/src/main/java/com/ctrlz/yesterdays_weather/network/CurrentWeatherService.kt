@@ -1,7 +1,7 @@
 package com.ctrlz.yesterdays_weather.network
 
-import com.ctrlz.yesterdays_weather.util.API_KEY
 import com.ctrlz.yesterdays_weather.data.CurrentWeatherData
+import com.ctrlz.yesterdays_weather.util.Constants.API_KEY
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
