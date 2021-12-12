@@ -1,4 +1,4 @@
-package com.ctrlz.yesterdays_weather.network
+package com.ctrlz.yesterdays_weather.util
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

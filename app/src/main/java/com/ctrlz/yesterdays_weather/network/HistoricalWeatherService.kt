@@ -17,5 +17,4 @@ interface HistoricalWeatherService {
         @Query("lang") lang: String = "kr",
         @Query("units") units: String = "metric"
     ): Response<HistoricalWeatherData>
-
 }

@@ -1,25 +1,17 @@
 package com.ctrlz.yesterdays_weather.ui
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.ctrlz.yesterdays_weather.data.CurrentWeatherData
 import com.ctrlz.yesterdays_weather.data.HistoricalWeatherData
 import com.ctrlz.yesterdays_weather.databinding.ActivityMainBinding
 import com.ctrlz.yesterdays_weather.network.RetrofitInstance
-import com.ctrlz.yesterdays_weather.network.safeApiCall
-import com.ctrlz.yesterdays_weather.util.DateExtensions.getDateFormat
-import com.ctrlz.yesterdays_weather.util.DateExtensions.getSecondTimestamp
-import com.ctrlz.yesterdays_weather.util.DateExtensions.moveDay
-import com.ctrlz.yesterdays_weather.util.DateExtensions.toDate
-import com.gun0912.tedpermission.coroutine.TedPermission
+import com.ctrlz.yesterdays_weather.util.*
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 import retrofit2.HttpException
@@ -61,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
             ///////
             val todayResult = safeApiCall(Dispatchers.IO) {
-                val todayTime = Date().getSecondTimestamp()
                 RetrofitInstance.currentWeatherService.getCurrentWeather(location.latitude, location.longitude)
             }
             val todayResponse = todayResult.getOrElse {
@@ -94,33 +85,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     suspend fun getCurrentLocation(): Location {
-        if (checkPermission()) {
+        if (checkPermissions(this)) {
             val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!! // TODO: NullPointerExecption
-        } else {
-            TODO("권한 거부 됐을 때")
+            val providers = locationManager.getProviders(true)
+
+            // locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)가 null일 때를 방지하기 위함
+            val bestLocation = providers.map {
+                locationManager.getLastKnownLocation(it)
+            }.filterNotNull().minByOrNull { it.accuracy }!! // accuracy가 가장 작은 Location 선택
+            return bestLocation
         }
+        TODO("권한 거부 됐을 때")
     }
-
-    suspend fun checkPermission(): Boolean {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                return true
-        val permissionResult = getPermissionResult()
-        return permissionResult.isGranted
-    }
-
-    suspend fun getPermissionResult() = TedPermission.create()
-            .setRationaleTitle("위치 권한")
-            .setRationaleMessage("현재 위치의 날씨를 불러오려면 위치 권한을 허용해주세요.")
-            .setDeniedTitle("권한 거부됨")
-            .setDeniedMessage("권한을 거부하면 서비스를 정상적으로 이용할 수 없습니다.\n\n[설정] > [권한]에서 설정할 수 있습니다.")
-            .setGotoSettingButtonText("설정")
-            .setPermissions(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-            .check()
 }
