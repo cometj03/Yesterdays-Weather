@@ -2,6 +2,7 @@ package com.ctrlz.yesterdays_weather.ui
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -11,12 +12,12 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.ctrlz.yesterdays_weather.data.CurrentWeatherData
+import com.ctrlz.yesterdays_weather.data.ForecastAndCurrentWeatherData
 import com.ctrlz.yesterdays_weather.data.HistoricalWeatherData
 import com.ctrlz.yesterdays_weather.databinding.ActivityMainBinding
 import com.ctrlz.yesterdays_weather.network.RetrofitInstance
+import com.ctrlz.yesterdays_weather.network.safeApiCall
 import com.ctrlz.yesterdays_weather.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.HttpException
@@ -37,21 +38,30 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
 
+        binding.btTest.setOnClickListener {
+            startActivity(Intent(this, ChartActivity::class.java))
+        }
+
         lifecycleScope.launchWhenCreated {
 
             val location = getCurrentLocation()
 
             launch {
-                val result = safeApiCall(Dispatchers.IO) {
+                val result = safeApiCall {
                     val yesterdayTime = Date().moveDay(-1).getSecondTimestamp()
-                    RetrofitInstance.historicalWeatherService.getBeforeWeather(location.latitude, location.longitude, yesterdayTime)
+                    RetrofitInstance.weatherService.getHistoricalWeather(
+                        location.latitude,
+                        location.longitude,
+                        yesterdayTime
+                    )
                 }
                 val response = result.getOrElse {
                     exceptionHandle(it)
                     return@launch
                 }
                 if (response.isSuccessful) {
-                    setHistoricalWeather(response.body())
+                    val weather = response.body()
+                    binding.tvYesterday.text = getString(weather)
                 } else {
                     val jsonObject = JSONObject(response.errorBody()?.toString() ?: "") // errorBody?.string()
                     val errorMessage = jsonObject.getString("message")
@@ -62,8 +72,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             launch {
-                val todayResult = safeApiCall(Dispatchers.IO) {
-                    RetrofitInstance.currentWeatherService.getCurrentWeather(
+                val todayResult = safeApiCall {
+                    RetrofitInstance.weatherService.getCurrentAndForecastWeather(
                         location.latitude,
                         location.longitude
                     )
@@ -73,42 +83,35 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
                 if (todayResponse.isSuccessful) {
-                    setCurrentWeather(todayResponse.body())
+                    val weather = todayResponse.body()
+                    binding.tvToday.text = getString(weather)
                 }
             }
         }
-
-        binding.btTest.setOnClickListener {
-
-        }
     }
 
-    fun setHistoricalWeather(weather: HistoricalWeatherData?) {
-        binding.tvYesterday.text =
-            if (weather != null) "어제의 기온(${weather.dataPointWeather.dt.toDate().getDateFormat()}): ${weather.dataPointWeather.temp}도"
-            else "body is null"
-    }
+    fun getString(weather: HistoricalWeatherData?) =
+        if (weather == null) "body is null" else "어제의 기온(${weather.dataPointWeather.dt.toDate().getDateFormat()}): ${weather.dataPointWeather.temp}도"
 
-    fun setCurrentWeather(weather: CurrentWeatherData?) {
-        binding.tvToday.text =
-            if (weather != null) "오늘의 기온(${weather.dt.toDate().getDateFormat()}): ${weather.main.temp}도"
-            else "body is null"
-    }
+    fun getString(weather: ForecastAndCurrentWeatherData?) =
+        if (weather == null) "body is null" else "오늘의 기온(${weather.current.dt.toDate().getDateFormat()}): ${weather.current.temp}도"
 
-    fun exceptionHandle(e: Throwable) {
+
+    fun exceptionHandle(e: Throwable?) {
         when (e) {
             is IOException -> Log.e(TAG, "IOException, you might not have internet connection")
             is HttpException -> Log.e(TAG, "HttpException, unexpected response")
-            else -> Log.e(TAG, "${e.message}")
+            else -> Log.e(TAG, "${e?.message}")
         }
     }
 
     suspend fun getCurrentLocation(): Location {
         val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+
         val isAllPermissionsGranted = permissions.all { ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }
 
+        // Permission Check
         if (isAllPermissionsGranted || requestPermissions(*permissions)) {
-
             val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val providers = locationManager.getProviders(true)
 
