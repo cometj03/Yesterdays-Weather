@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
 
-   private lateinit var binding: ActivityMainBinding
-   private lateinit var viewModel: MainActivityViewModel
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var viewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,9 +50,9 @@ class MainActivity : AppCompatActivity() {
                 val result = safeApiCall {
                     val yesterdayTime = Date().moveDay(-1).getSecondTimestamp()
                     RetrofitInstance.weatherService.getHistoricalWeather(
-                        location.latitude,
-                        location.longitude,
-                        yesterdayTime
+                            location.latitude,
+                            location.longitude,
+                            yesterdayTime
                     )
                 }
                 val response = result.getOrElse {
@@ -63,7 +63,8 @@ class MainActivity : AppCompatActivity() {
                     val weather = response.body()
                     binding.tvYesterday.text = getString(weather)
                 } else {
-                    val jsonObject = JSONObject(response.errorBody()?.toString() ?: "") // errorBody?.string()
+                    val jsonObject = JSONObject(response.errorBody()?.toString()
+                            ?: "") // errorBody?.string()
                     val errorMessage = jsonObject.getString("message")
 
                     binding.tvYesterday.text = "Response not successful. code: ${response.code()}\n\nError message: $errorMessage"
@@ -74,8 +75,8 @@ class MainActivity : AppCompatActivity() {
             launch {
                 val todayResult = safeApiCall {
                     RetrofitInstance.weatherService.getCurrentAndForecastWeather(
-                        location.latitude,
-                        location.longitude
+                            location.latitude,
+                            location.longitude
                     )
                 }
                 val todayResponse = todayResult.getOrElse {
@@ -91,10 +92,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getString(weather: HistoricalWeatherData?) =
-        if (weather == null) "body is null" else "어제의 기온(${weather.dataPointWeather.dt.toDate().getDateFormat()}): ${weather.dataPointWeather.temp}도"
+            if (weather == null) "body is null" else "어제의 기온(${weather.dataPointWeather.dt.toDate().getDateFormat()}): ${weather.dataPointWeather.temp}도"
 
     fun getString(weather: ForecastAndCurrentWeatherData?) =
-        if (weather == null) "body is null" else "오늘의 기온(${weather.current.dt.toDate().getDateFormat()}): ${weather.current.temp}도"
+            if (weather == null) "body is null" else "오늘의 기온(${weather.current.dt.toDate().getDateFormat()}): ${weather.current.temp}도"
 
 
     fun exceptionHandle(e: Throwable?) {
